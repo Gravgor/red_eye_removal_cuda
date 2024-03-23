@@ -2,10 +2,14 @@
 #include "device_launch_parameters.h";
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image.h"
 #include "stb_image_write.h"
+#include "modp_b64.h"
+
+#define MAX_ENCODE_BUFFER_SIZE 7840
 
 #define CUDA_CHECK(call) \
     do { \
@@ -104,6 +108,18 @@ int main()
 
     stbi_write_jpg("red_eye_removed.jpg", width, height, channel, dstImage, 100);
 
+    char* imageData = reinterpret_cast<char*>(dstImage);
+    int encodeLength = modp_b64_encode_len(width * height * channel);
+    char* base64Image = (char*)malloc(encodeLength);
+    if (base64Image == NULL) {
+        fprintf(stderr, "Failed to allocate memory for base64 encoding\n");
+        exit(EXIT_FAILURE);
+    }
+
+    const char* base64ImageConst = base64Image;
+    printf("base64ImageConst: %s\n", base64ImageConst);
+
+    free(base64Image);
     stbi_image_free(srcImage);
     free(dstImage);
 
